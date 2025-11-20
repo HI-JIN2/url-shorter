@@ -123,3 +123,17 @@ async def metrics_middleware(request: Request, call_next):
 def metrics():
     data = generate_latest()
     return Response(content=data, media_type="text/plain; version=0.0.4")
+
+
+@app.get("/urls")
+def list_urls(db: Session = Depends(get_db)):
+    urls = db.query(ShortURL).order_by(ShortURL.created_at.desc()).all()
+    return [
+        {
+            "short_code": u.short_code,
+            "original_url": u.original_url,
+            "hit_count": u.hit_count,
+            "created_at": u.created_at,
+        }
+        for u in urls
+    ]
