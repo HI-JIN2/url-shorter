@@ -59,7 +59,7 @@ def shorten(req: ShortenRequest, db: Session = Depends(get_db)):
     db.refresh(short)
 
     load_dotenv()
-    DOMAIN = os.getenv("API_KEY")
+    DOMAIN = os.getenv("DOMAIN")
 
     return ShortenResponse(
         short_code=short.short_code,
