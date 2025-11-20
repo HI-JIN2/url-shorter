@@ -81,16 +81,6 @@ def shorten(req: ShortenRequest, db: Session = Depends(get_db)):
     )
 
 
-@app.get("/{code}")
-def redirect(code: str, db: Session = Depends(get_db)):
-    short = db.query(ShortURL).filter(ShortURL.short_code == code).first()
-    if not short:
-        raise HTTPException(status_code=404, detail="Short URL not found")
-    short.hit_count += 1
-    db.commit()
-    return RedirectResponse(short.original_url)
-
-
 @app.get("/stats/{code}")
 def stats(code: str, db: Session = Depends(get_db)):
     short = db.query(ShortURL).filter(ShortURL.short_code == code).first()
@@ -101,6 +91,16 @@ def stats(code: str, db: Session = Depends(get_db)):
         "hit_count": short.hit_count,
         "created_at": short.created_at,
     }
+
+
+@app.get("/{code}")
+def redirect(code: str, db: Session = Depends(get_db)):
+    short = db.query(ShortURL).filter(ShortURL.short_code == code).first()
+    if not short:
+        raise HTTPException(status_code=404, detail="Short URL not found")
+    short.hit_count += 1
+    db.commit()
+    return RedirectResponse(short.original_url)
 
 
 REQUEST_COUNT = Counter("http_requests_total", "Total HTTP requests", ["method", "endpoint", "http_status"])
