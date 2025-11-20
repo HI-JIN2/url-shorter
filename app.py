@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
 import string, random
+from dotenv import load_dotenv
+import os
+
 
 from db import SessionLocal, init_db
 from models import ShortURL
@@ -54,9 +57,13 @@ def shorten(req: ShortenRequest, db: Session = Depends(get_db)):
     db.add(short)
     db.commit()
     db.refresh(short)
+
+    load_dotenv()
+    DOMAIN = os.getenv("API_KEY")
+
     return ShortenResponse(
         short_code=short.short_code,
-        short_url=f"http://localhost:8000/{short.short_code}",
+        short_url=f"{DOMAIN}{short.short_code}",
     )
 
 
