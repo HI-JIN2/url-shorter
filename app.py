@@ -93,6 +93,20 @@ def stats(code: str, db: Session = Depends(get_db)):
     }
 
 
+@app.get("/urls")
+def list_urls(db: Session = Depends(get_db)):
+    urls = db.query(ShortURL).order_by(ShortURL.created_at.desc()).all()
+    return [
+        {
+            "short_code": u.short_code,
+            "original_url": u.original_url,
+            "hit_count": u.hit_count,
+            "created_at": u.created_at,
+        }
+        for u in urls
+    ]
+
+
 @app.get("/{code}")
 def redirect(code: str, db: Session = Depends(get_db)):
     short = db.query(ShortURL).filter(ShortURL.short_code == code).first()
@@ -125,15 +139,3 @@ def metrics():
     return Response(content=data, media_type="text/plain; version=0.0.4")
 
 
-@app.get("/urls")
-def list_urls(db: Session = Depends(get_db)):
-    urls = db.query(ShortURL).order_by(ShortURL.created_at.desc()).all()
-    return [
-        {
-            "short_code": u.short_code,
-            "original_url": u.original_url,
-            "hit_count": u.hit_count,
-            "created_at": u.created_at,
-        }
-        for u in urls
-    ]
