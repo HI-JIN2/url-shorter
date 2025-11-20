@@ -1,0 +1,31 @@
+# Python venv
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# SQLite DB files
+*.db
+
+# Logs
+*.log
+
+# Docker
+*.pid
+
+# Prometheus Time-Series Data
+prometheus/data/
+
+# Grafana data & plugins
+grafana/data/
+grafana/plugins/
+grafana/provisioning/plugins/
+
+# vscode / pycharm
+.idea/
+.vscode/
+
+# env files
+.env
