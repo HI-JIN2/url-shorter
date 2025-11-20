@@ -63,7 +63,7 @@ def shorten(req: ShortenRequest, db: Session = Depends(get_db)):
 
     return ShortenResponse(
         short_code=short.short_code,
-        short_url=f"{DOMAIN}{short.short_code}",
+        short_url=f"{DOMAIN}/{short.short_code}",
     )
 
 
