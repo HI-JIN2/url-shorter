@@ -1,12 +1,16 @@
+import os
+import random
+import string
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import RedirectResponse
+from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from fastapi.responses import Response
+from prometheus_client import Counter, Histogram, generate_latest
 from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
-import string, random
-from dotenv import load_dotenv
-import os
-
 
 from db import SessionLocal, init_db
 from models import ShortURL
@@ -51,8 +55,18 @@ def on_startup():
 
 @app.post("/shorten", response_model=ShortenResponse)
 def shorten(req: ShortenRequest, db: Session = Depends(get_db)):
-    # 중복 URL 처리 방식은 자유 (같은 URL이면 이전 코드 재사용 등)
+    # 1) URL이 이미 존재하는지 체크
+    existing = db.query(ShortURL).filter(ShortURL.original_url == str(req.url)).first()
+
+    if existing:
+        return ShortenResponse(
+            short_code=existing.short_code,
+            short_url=f"https://your-domain.com/{existing.short_code}",
+        )
+
+    # 2) 없으면 새로 short code 생성
     code = generate_code()
+
     short = ShortURL(short_code=code, original_url=str(req.url))
     db.add(short)
     db.commit()
@@ -88,10 +102,6 @@ def stats(code: str, db: Session = Depends(get_db)):
         "created_at": short.created_at,
     }
 
-
-from prometheus_client import Counter, Histogram, generate_latest
-from fastapi.responses import Response
-from fastapi import Request
 
 REQUEST_COUNT = Counter("http_requests_total", "Total HTTP requests", ["method", "endpoint", "http_status"])
 REQUEST_LATENCY = Histogram("http_request_duration_seconds", "HTTP request latency", ["endpoint"])
